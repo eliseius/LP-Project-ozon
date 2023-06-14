@@ -1,23 +1,29 @@
-from datetime import datetime, timedelta
-from calendar import monthrange
+from datetime import timedelta
+
 import json
+import os
 import requests
-import settings
 
 
-def general_report(month, year):
-    date_start, date_finish = format_data(month, year)
+def general_report(date_start, date_finish, limit, offset):
+    try:
+        str_date_start, str_date_finish = format_data(date_start, date_finish)
+        limit_send, offset_send = data_processing(limit, offset)
+    except(TypeError):
+        print('Ошибка обработки данных')
+        return None
+
     go_to_url = "https://api-seller.ozon.ru/v3/posting/fbs/list"
-    headers = {'Client-Id': settings.CLIENT_ID, 'Api-Key': settings.USER_API, 'Content-Type': 'application/json'}
+    headers = {'Client-Id': os.environ['OZON_CLIENT_ID'], 'Api-Key': os.environ['OZON_API_KEY'], 'Content-Type': 'application/json'}
     params = {
         'dir': 'asc',
         'filter': {
-            'since': date_start,
+            'since': str_date_start,
             'status': 'delivered',
-            'to': date_finish
+            'to': str_date_finish
         },
-        'limit': 1000,
-        'offset': 0,
+        'limit': limit_send,
+        'offset': offset_send,
         'translit': True,
         'with': {
             'analytics_data': True,
@@ -32,22 +38,33 @@ def general_report(month, year):
             report_for_the_period = result.json()
             return report_for_the_period
         except(ValueError):
-            print('Ошибка данных')
+            print('Ошибка сформированных данных')
             return None
     else:
         print('Сетевая ошибка')
         return None
 
 
-def format_data(year, month):
-    date_start = datetime.strptime(f'{year}-{month}-1', '%Y-%m-%d')
-    datetime_start = date_start.strftime('%Y-%m-%dT%H:%M:%S.%fZ')
-    last_numb_month = monthrange(year, month)[1]
-    date_last_numb_month = datetime.strptime(f'{year}-{month}-{last_numb_month}', '%Y-%m-%d')
-    date_finish = date_last_numb_month + timedelta(days=1)
-    datetime_finish = date_finish.strftime('%Y-%m-%dT%H:%M:%S.%fZ')
-    return datetime_start, datetime_finish
+def format_data(date_start, date_finish):
+    str_datetime_start = date_start.strftime('%Y-%m-%dT%H:%M:%S.%fZ')
+    date_finish = date_finish + timedelta(days=1)
+    str_datetime_finish = date_finish.strftime('%Y-%m-%dT%H:%M:%S.%fZ')
+    return str_datetime_start, str_datetime_finish
+
+def data_processing(limit, offset):
+    try:
+        limit_int = abs(int(limit))
+        offset_int = abs(int(offset))
+    except(ValueError):
+        print('Ошибка ввода данных')
+        return None
+    
+    if limit_int == 0 or limit_int > 1000:
+        print('Количество значений в ответе должно быть в диапазоне от 1 до 1000')
+        return None
+    else:
+        return limit_int, offset_int
 
 
 if __name__ == "__main__":
-    print(general_report(2023, 2))
+    main()
