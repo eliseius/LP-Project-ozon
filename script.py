@@ -1,14 +1,14 @@
-from datetime import timedelta
+from datetime import date, timedelta
 
 import json
 import os
 import requests
 
 
-def general_report(date_start, date_finish, limit, offset):
+def general_report_output(date_start, date_finish, limit, offset):
+    str_date_start, str_date_finish = format_data_in_str(date_start, date_finish)
     try:
-        str_date_start, str_date_finish = format_data(date_start, date_finish)
-        limit_send, offset_send = data_processing(limit, offset)
+        limit_send = check_limit(limit)
     except(TypeError):
         print('Ошибка обработки данных')
         return None
@@ -23,7 +23,7 @@ def general_report(date_start, date_finish, limit, offset):
             'to': str_date_finish
         },
         'limit': limit_send,
-        'offset': offset_send,
+        'offset': offset,
         'translit': True,
         'with': {
             'analytics_data': True,
@@ -45,26 +45,15 @@ def general_report(date_start, date_finish, limit, offset):
         return None
 
 
-def format_data(date_start, date_finish):
+def format_data_in_str(date_start, date_finish):
     str_datetime_start = date_start.strftime('%Y-%m-%dT%H:%M:%S.%fZ')
     date_finish = date_finish + timedelta(days=1)
     str_datetime_finish = date_finish.strftime('%Y-%m-%dT%H:%M:%S.%fZ')
     return str_datetime_start, str_datetime_finish
 
-def data_processing(limit, offset):
-    try:
-        limit_int = abs(int(limit))
-        offset_int = abs(int(offset))
-    except(ValueError):
-        print('Ошибка ввода данных')
-        return None
-    
-    if limit_int == 0 or limit_int > 1000:
+def check_limit(limit):
+    if limit == 0 or limit > 1000:
         print('Количество значений в ответе должно быть в диапазоне от 1 до 1000')
         return None
     else:
-        return limit_int, offset_int
-
-
-if __name__ == "__main__":
-    main()
+        return limit
