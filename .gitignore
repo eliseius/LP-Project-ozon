@@ -162,4 +162,6 @@ cython_debug/
 
 # My Files
 TEST_bot.py
+TEST_for_test.py
+TEST_for_test2.py
 ozon_settings.py
