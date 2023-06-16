@@ -159,6 +159,6 @@ cython_debug/
 #  option (not recommended) you can uncomment the following to ignore the entire idea folder.
 #.idea/
 
-settings.py
 test_sell_ozon.txt
+modified_report.txt
 export.py

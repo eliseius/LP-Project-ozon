@@ -1,16 +1,15 @@
-from datetime import date, timedelta
+from datetime import datetime
 
 import json
 import os
 import requests
 
 
-def general_report_output(date_start, date_finish, limit, offset):
-    str_date_start, str_date_finish = format_data_in_str(date_start, date_finish)
-    try:
-        limit_send = check_limit(limit)
-    except(TypeError):
-        print('Ошибка обработки данных')
+def getting_sales_data(date_start, date_finish, limit, offset):
+    str_datetime_start = datetime.strftime(date_start, '%Y-%m-%dT%H:%M:%S.%fZ')
+    str_datetime_finish = datetime.strftime(date_finish, '%Y-%m-%dT%H:%M:%S.%fZ')
+    if limit == 0 or limit > 1000:
+        print('Диапазон значений лимит от 1 до 1000')
         return None
 
     go_to_url = "https://api-seller.ozon.ru/v3/posting/fbs/list"
@@ -18,11 +17,11 @@ def general_report_output(date_start, date_finish, limit, offset):
     params = {
         'dir': 'asc',
         'filter': {
-            'since': str_date_start,
+            'since': str_datetime_start,
             'status': 'delivered',
-            'to': str_date_finish
+            'to': str_datetime_finish
         },
-        'limit': limit_send,
+        'limit': limit,
         'offset': offset,
         'translit': True,
         'with': {
@@ -35,8 +34,7 @@ def general_report_output(date_start, date_finish, limit, offset):
     result = requests.post(go_to_url, headers=headers, data=params)
     if result.status_code == requests.codes.ok:
         try:
-            report_for_the_period = result.json()
-            return report_for_the_period
+            sales_report = result.json()
         except(ValueError):
             print('Ошибка сформированных данных')
             return None
@@ -44,16 +42,25 @@ def general_report_output(date_start, date_finish, limit, offset):
         print('Сетевая ошибка')
         return None
 
+    return abridged_report(sales_report)
 
-def format_data_in_str(date_start, date_finish):
-    str_datetime_start = date_start.strftime('%Y-%m-%dT%H:%M:%S.%fZ')
-    date_finish = date_finish + timedelta(days=1)
-    str_datetime_finish = date_finish.strftime('%Y-%m-%dT%H:%M:%S.%fZ')
-    return str_datetime_start, str_datetime_finish
 
-def check_limit(limit):
-    if limit == 0 or limit > 1000:
-        print('Количество значений в ответе должно быть в диапазоне от 1 до 1000')
-        return None
-    else:
-        return limit
+def abridged_report(sales_report):
+    all_item_sold = sales_report['result']['postings']
+    modified_report = []
+    for one_item_sold in all_item_sold:
+        inform_every_item_sold = {}
+        posting_number_item = one_item_sold['posting_number']
+        inform_every_item_sold['posting_number'] = posting_number_item
+        shipment_date_item = one_item_sold['shipment_date']
+        inform_every_item_sold['shipment_date'] = shipment_date_item
+        price_item = one_item_sold['products'][0]['price']
+        inform_every_item_sold['price'] = price_item
+        name_item = one_item_sold['products'][0]['name']
+        inform_every_item_sold['name'] = name_item
+        quantity_item = one_item_sold['products'][0]['quantity']
+        inform_every_item_sold['quantity'] = quantity_item
+        cluster_delivery = one_item_sold['financial_data']['cluster_to']
+        inform_every_item_sold['cluster_delivery'] = cluster_delivery
+        modified_report.append(inform_every_item_sold)
+    return modified_report
