@@ -161,10 +161,10 @@ cython_debug/
 
 
 # My Files
+sales.json
+constants.py
+ozon_settings.py
+project_ozon_backup.py
 TEST_bot.py
 TEST_for_test.py
 TEST_for_test2.py
-project_ozon_backup.py
-ozon_settings.py
-constants.py
-sales.json
