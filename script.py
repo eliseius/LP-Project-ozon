@@ -15,7 +15,7 @@ def getting_sales_data(date_start, date_finish, limit, offset):
         'dir': 'asc',
         'filter': {
             'since': str_datetime_start,
-            'status': 'delivered',
+            'status': None,
             'to': str_datetime_finish
         },
         'limit': limit,
@@ -39,7 +39,8 @@ def getting_sales_data(date_start, date_finish, limit, offset):
         print('Сетевая ошибка')
         return None
 
-    return make_short_report(sales_report)
+    short_report = make_short_report(sales_report)
+    return check_filter_city(short_report)
 
 
 def make_short_report(sales_report):
@@ -56,5 +57,25 @@ def make_short_report(sales_report):
         }
 
         short_report.append(inform_every_item_sold)
+    
+    result_offset = sales_report['result']['has_next']
+    numb_items = len(short_report)
+    print(result_offset)
+    print(numb_items)
 
     return short_report
+
+def check_filter_city(short_report):
+    city_of_kz_be = ['Актау', 'Актобе', 'Алма-Ата', 'Астана', 'Атырау', 'Караганда', 
+                    'Костанай', 'Кызылорда', 'Павлодар', 'Петропавловск', 'Тараз', 
+                    'Туркестан', 'Уральск', 'Усть-Каменогорск', 'Казахстан (Недействительный)', 
+                    'Брест', 'Витебск', 'Гомель', 'Гродно', 'Минск', 'Могилев', 
+                    'Беларусь (Недействительный)', 'Казахстан', 'Беларусь']
+
+    short_report_with_filter_city = []
+    for one_item_sold in short_report:
+        item_city = one_item_sold['cluster_delivery']
+        if item_city in city_of_kz_be:
+            short_report_with_filter_city.append(one_item_sold)
+
+    return short_report_with_filter_city
