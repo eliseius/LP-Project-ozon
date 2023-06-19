@@ -5,9 +5,10 @@ import os
 import requests
 
 
-def getting_sales_data(date_start, date_finish, limit, offset):
+def getting_sales_data(date_start, date_finish, limit, offset, status):
     str_datetime_start = datetime.strftime(date_start, '%Y-%m-%dT%H:%M:%S.%fZ')
     str_datetime_finish = datetime.strftime(date_finish, '%Y-%m-%dT%H:%M:%S.%fZ')
+    status_send = check_status(status)
 
     go_to_url = "https://api-seller.ozon.ru/v3/posting/fbs/list"
     headers = {'Client-Id': os.environ['OZON_CLIENT_ID'], 'Api-Key': os.environ['OZON_API_KEY'], 'Content-Type': 'application/json'}
@@ -15,7 +16,7 @@ def getting_sales_data(date_start, date_finish, limit, offset):
         'dir': 'asc',
         'filter': {
             'since': str_datetime_start,
-            'status': 'delivered',
+            'status': status_send,
             'to': str_datetime_finish
         },
         'limit': limit,
@@ -58,3 +59,17 @@ def make_short_report(sales_report):
         short_report.append(inform_every_item_sold)
 
     return short_report
+
+
+def check_status(status):
+    status_catalogue = ['awaiting_registration', 'acceptance_in_progress', 'awaiting_approve', 
+                        'awaiting_packaging', 'awaiting_deliver', 'arbitration', 'client_arbitration', 
+                        'delivering', 'driver_pickup', 'delivered', 'cancelled', 
+                        'not_accepted', 'sent_by_seller'
+                        ]
+
+    if status in status_catalogue:
+        return status
+    else:
+        print('Не правильно указан статус отправления. В отчете не будет учтен фильтр по статусам')
+        return None
