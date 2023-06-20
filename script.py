@@ -62,11 +62,11 @@ def make_short_report(sales_report):
 
 
 def check_status(status):
-    status_catalogue = ['awaiting_registration', 'acceptance_in_progress', 'awaiting_approve', 
+    status_catalogue = {'awaiting_registration', 'acceptance_in_progress', 'awaiting_approve', 
                         'awaiting_packaging', 'awaiting_deliver', 'arbitration', 'client_arbitration', 
                         'delivering', 'driver_pickup', 'delivered', 'cancelled', 
                         'not_accepted', 'sent_by_seller'
-                        ]
+                        }               
 
     if status in status_catalogue:
         return status
