@@ -39,7 +39,10 @@ def getting_sales_data(date_start, date_finish, limit, offset):
         print('Сетевая ошибка')
         return None
 
-    return make_short_report(sales_report)
+    short_report = make_short_report(sales_report)
+    make_pagination(date_start, date_finish, limit, offset, sales_report)
+
+    return short_report
 
 
 def make_short_report(sales_report):
@@ -58,3 +61,10 @@ def make_short_report(sales_report):
         short_report.append(inform_every_item_sold)
 
     return short_report
+
+
+def make_pagination(date_start, date_finish, limit, offset, sales_report):
+    value_pagination = sales_report['result']['has_next']
+    if value_pagination:
+        offset_new = limit + offset
+        return getting_sales_data(date_start, date_finish, limit, offset_new)
