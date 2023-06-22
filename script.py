@@ -62,7 +62,7 @@ def make_short_report(sales_report):
 
 
 def check_filter_city(short_report):
+    short_report_with_filter_city = [item_sold for item_sold in short_report
+                                                   if CITIES_FROM_KZ_BE & set(item_sold['cluster_delivery'].split())]
 
-    return [item_sold for item_sold in short_report 
-                    for one_element in item_sold['cluster_delivery'].split()
-                        if one_element in CITIES_FROM_KZ_BE]
+    return short_report_with_filter_city
