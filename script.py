@@ -1,4 +1,5 @@
 from datetime import datetime
+from constants import CITIES_FROM_KZ_BE
 
 import json
 import os
@@ -40,7 +41,8 @@ def getting_sales_data(date_start, date_finish, limit, offset, status):
         print('Сетевая ошибка')
         return None
 
-    return make_short_report(sales_report)
+    short_report = make_short_report(sales_report)
+    return check_filter_city(short_report)
 
 
 def make_short_report(sales_report):
@@ -57,7 +59,6 @@ def make_short_report(sales_report):
         }
 
         short_report.append(inform_every_item_sold)
-
     return short_report
 
 
@@ -73,3 +74,13 @@ def check_status(status):
     else:
         print('Не правильно указан статус отправления. В отчете не будет учтен фильтр по статусам')
         return None
+
+
+def check_filter_city(short_report):
+    short_report_with_filter_city = [
+        item_sold 
+        for item_sold in short_report
+        if CITIES_FROM_KZ_BE & set(item_sold['cluster_delivery'].split())
+    ]
+
+    return short_report_with_filter_city
