@@ -1,0 +1,1 @@
+URL = "https://api-seller.ozon.ru/v3/posting/fbs/list"
