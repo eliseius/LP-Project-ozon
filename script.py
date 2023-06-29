@@ -1,41 +1,41 @@
 from datetime import datetime
 
+import constants
 import json
 import os
 import requests
-import constants
 
 
-def get_sales_data(date_start, date_finish):
-    limit = 1000
+def get_sales_data(date_start, date_finish, status):
     offset = 0
     report_pagination = []
-
     while True:
-        sales_report = get_raw_sales_data(date_start, date_finish, limit, offset)
+        sales_report = get_raw_sales_data(date_start, date_finish, constants.LIMIT, offset, status)
         if sales_report is not None:
             short_report = make_short_report(sales_report)
             report_pagination.extend(short_report)
             if sales_report['result']['has_next']:
-                offset += limit
+                offset += constants.LIMIT
             else:
                 break
         else:
             break
     
-    return report_pagination
+    report_with_filter_city = check_filter_city(report_pagination)
+    return report_with_filter_city
 
 
-def get_raw_sales_data(date_start, date_finish, limit, offset):
+def get_raw_sales_data(date_start, date_finish, limit, offset, status):
     str_datetime_start = datetime.strftime(date_start, '%Y-%m-%dT%H:%M:%S.%fZ')
     str_datetime_finish = datetime.strftime(date_finish, '%Y-%m-%dT%H:%M:%S.%fZ')
+    status_send = check_status(status)
 
     headers = {'Client-Id': os.environ['OZON_CLIENT_ID'], 'Api-Key': os.environ['OZON_API_KEY'], 'Content-Type': 'application/json'}
     params = {
         'dir': 'asc',
         'filter': {
             'since': str_datetime_start,
-            'status': 'delivered',
+            'status': status_send,
             'to': str_datetime_finish
         },
         'limit': limit,
@@ -75,5 +75,22 @@ def make_short_report(sales_report):
         }
 
         short_report.append(inform_every_item_sold)
-
     return short_report
+
+
+def check_status(status):               
+    if status in constants.STATUS_CATALOGUE:
+        return status
+    else:
+        print('Не правильно указан статус отправления. В отчете не будет учтен фильтр по статусам')
+        return None
+
+
+def check_filter_city(short_report):
+    short_report_with_filter_city = [
+        item_sold 
+        for item_sold in short_report
+        if constants.CITIES_FROM_KZ_BE & set(item_sold['cluster_delivery'].split())
+    ]
+
+    return short_report_with_filter_city
