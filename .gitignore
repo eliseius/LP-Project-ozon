@@ -165,6 +165,10 @@ sales.json
 constants.py
 ozon_settings.py
 project_ozon_backup.py
+script.py
 TEST_bot.py
 TEST_for_test.py
 TEST_for_test2.py
+TEST_keyboard.py
+TEST_dialog.py
+project_ozon_backup0.py
