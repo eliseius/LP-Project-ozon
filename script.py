@@ -1,9 +1,11 @@
-from datetime import datetime
+from datetime import datetime, date
 
-import constants
 import json
 import os
 import requests
+
+import constants
+from output import create_teable
 
 
 def get_sales_data(date_start, date_finish, status):
@@ -94,3 +96,8 @@ def check_filter_city(short_report):
     ]
 
     return short_report_with_filter_city
+
+
+if __name__ == '__main__':
+    report = get_sales_data(date(2023, 3, 1), date(2023, 4, 30), None)
+    create_teable(report)
