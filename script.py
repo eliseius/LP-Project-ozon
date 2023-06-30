@@ -5,6 +5,8 @@ import json
 import os
 import requests
 
+from input_data import get_input_data
+
 
 def get_sales_data(date_start, date_finish, status):
     offset = 0
@@ -94,3 +96,8 @@ def check_filter_city(short_report):
     ]
 
     return short_report_with_filter_city
+
+
+if __name__ == '__main__':
+    date_start, date_finish, status = get_input_data()
+    get_sales_data(date_start, date_finish, status)
