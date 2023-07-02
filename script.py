@@ -1,10 +1,11 @@
-from datetime import datetime, date
+from datetime import datetime
 
 import json
 import os
 import requests
 
 import constants
+from input_data import get_input_data
 from output import create_teable
 
 
@@ -99,5 +100,7 @@ def check_filter_city(short_report):
 
 
 if __name__ == '__main__':
-    report = get_sales_data(date(2023, 3, 1), date(2023, 4, 30), None)
+    date_start, date_finish, status = get_input_data()
+    report = get_sales_data(date_start, date_finish, status)
     create_teable(report)
+    
