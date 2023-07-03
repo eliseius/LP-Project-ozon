@@ -3,8 +3,6 @@ from rich.table import Table
 from rich.theme import Theme
 from rich.text import Text
 
-from constants import CITIES_FROM_BE
-
 
 def create_table(report):
     table = Table(title="Data sell OZON", title_style="#00ab98", expand=True, show_lines=True, style="#f6c42d")
@@ -13,25 +11,31 @@ def create_table(report):
     table.add_column("shipment_date", justify="center", overflow='fold', max_width=10)
     table.add_column("price", justify="center", max_width=6)
     table.add_column("name", justify="left",  overflow='fold', min_width=15)
-    table.add_column("quantity", overflow='fold', justify="center", max_width=7)   
+    table.add_column("quantity", overflow='fold', justify="center", max_width=7)
     table.add_column("cluster_delivery",  overflow='fold', justify="left", max_width=10)
 
-    if report is not None:
-        for item in report:
-            item['shipment_date'] = item.get('shipment_date')[:10]
-            item['price'] = '%.1f' % float(item.get('price'))
-            text = Text(item['cluster_delivery'])
+    for item in report:
+        item_out = edit_item(item)
+        table.add_row(item_out['posting_number'], item_out['shipment_date'], item_out['price'],
+                        item_out['name'], item_out['quantity'], item_out['cluster_delivery'])
 
-            if CITIES_FROM_BE & set(item['cluster_delivery'].split()):
-                text.stylize("#41a02c")
-            else:
-                text.stylize("#009ce9")
+    console = Console()
+    console.print(table)
 
-            table.add_row(item['posting_number'], item['shipment_date'], item['price'],
-                          item['name'], str(item['quantity']), text)
 
-        console = Console()
-        console.print(table)
+def edit_item(item):
+    item['shipment_date'] = item.get('shipment_date')[:10]
+    item['price'] = '%.1f' % float(item.get('price'))
+    item['quantity'] = str(item['quantity'])
+    text = Text(item['cluster_delivery'])
+
+    if item['cluster_delivery'] == 'Беларусь':
+        text.stylize("#41a02c")
+    else:
+        text.stylize("#009ce9")
+
+    item['cluster_delivery'] = text
+    return item
 
 
 def get_color_message(message, tag):

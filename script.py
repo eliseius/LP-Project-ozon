@@ -4,28 +4,20 @@ import json
 import os
 import requests
 
-from constants import CITIES_FROM_BE, CITIES_FROM_KZ, LIMIT, STATUS_CATALOGUE, URL
+from constants import CITIES_FROM_BE, CITIES_FROM_KZ, LIMIT, URL
 from input_data import get_input_data
 from output import create_table, get_color_message
 
 
-def get_sales_data(date_start, date_finish, status_row):
+def get_sales_data(date_start, date_finish, status):
     offset = 0
     str_dt_start = dt.strftime(date_start, '%Y-%m-%dT%H:%M:%S.%fZ')
     str_dt_finish = dt.strftime(date_finish, '%Y-%m-%dT%H:%M:%S.%fZ')
 
-    status_send= check_status(status_row)
-    report = get_report_with_all_page(str_dt_start, str_dt_finish, offset, status_send)
+    report = get_report_with_all_page(str_dt_start, str_dt_finish, offset, status)
     report_with_filter_city = check_filter_city(report)
 
     return report_with_filter_city
-
-
-def check_status(status):
-    if status in STATUS_CATALOGUE:
-        return status
-    else:
-        get_color_message(('Не правильно указан статус отправления. В отчете не будет учтен фильтр по статусам'), 'info')
 
 
 def get_report_with_all_page(str_datetime_start, str_datetime_finish, offset, status):
@@ -40,12 +32,14 @@ def get_report_with_all_page(str_datetime_start, str_datetime_finish, offset, st
             else:
                 break
         else:
-            return None
+            break
     return report_pagination
 
 
 def get_raw_sales_data(datetime_start, datetime_finish, limit, offset, status):
-    headers = {'Client-Id': os.environ['OZON_CLIENT_ID'], 'Api-Key': os.environ['OZON_API_KEY'], 'Content-Type': 'application/json'}
+    headers = {'Client-Id': os.environ['OZON_CLIENT_ID'], 'Api-Key': os.environ['OZON_API_KEY'],
+               'Content-Type': 'application/json'}
+
     params = {
         'dir': 'asc',
         'filter': {
@@ -94,19 +88,20 @@ def make_short_report(sales_report):
 
 
 def check_filter_city(short_report):
-    if short_report is not None:
-        short_report_with_filter_city = [
-            item_sold 
-            for item_sold in short_report
-            if CITIES_FROM_KZ.union(CITIES_FROM_BE) & set(item_sold['cluster_delivery'].split())
-        ]
-        return short_report_with_filter_city
-    else:
-        return None
+    short_report_with_filter_city = []
+    for item_sold in short_report:
+        clusters = set(item_sold['cluster_delivery'].split())
+        if CITIES_FROM_KZ.union(CITIES_FROM_BE) & clusters:
+            if CITIES_FROM_KZ & clusters:
+                item_sold['cluster_delivery'] = 'Казахстан'
+            else:
+                item_sold['cluster_delivery'] = 'Беларусь'
+        short_report_with_filter_city.append(item_sold)
+
+    return short_report_with_filter_city
 
 
 if __name__ == '__main__':
-    if get_input_data() is not None:
-        date_start, date_finish, status = get_input_data()
-        report = get_sales_data(date_start, date_finish, status)
-        create_table(report)
+    date_start, date_finish, status = get_input_data()
+    report = get_sales_data(date_start, date_finish, status)
+    create_table(report)
