@@ -96,7 +96,7 @@ def check_filter_city(short_report):
                 item_sold['cluster_delivery'] = 'Казахстан'
             else:
                 item_sold['cluster_delivery'] = 'Беларусь'
-        short_report_with_filter_city.append(item_sold)
+            short_report_with_filter_city.append(item_sold)
 
     return short_report_with_filter_city
 
