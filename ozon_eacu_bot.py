@@ -66,7 +66,7 @@ def report_status(update, context):
     order_status = update.message.text
     if order_status in constants.STATUS_CATALOGUE:
         context.user_data["report"] = {"status": order_status}
-        update.message.reply_text("Сохраните отчёт")
+        update.message.reply_text("Отчёт готов")
         return "save"
     else:
         update.message.reply_text("Введите корректный статус заказов")
@@ -76,8 +76,15 @@ def report_status(update, context):
 def report_save(update, context):
     report_output = get_sales_data("beginning", "end", "status")
     # report_output = get_sales_data(date_beginning, date_end, order_status)
-    update.message.reply_text(report_output, reply_markup = main_keyboard())
-    return ConversationHandler.END
+    update.message.reply_text(report_output)
+    return "new"
+
+
+def new_report(update, context):
+    update.message.reply_text(
+        'Вы можете сформировать новый отчёт',
+        reply_markup = main_keyboard()
+    )
 
 
 def report_incorrect(update, context):
@@ -86,7 +93,10 @@ def report_incorrect(update, context):
 
 def command_request(update, context):
     user_text = update.message.text
-    update.message.reply_text('Данная команда не поддерживается')
+    update.message.reply_text(
+        'Данная команда не поддерживается',
+        reply_markup = main_keyboard()
+    )
 
 
 def get_date(input_date):  
@@ -104,6 +114,7 @@ def main():
             "end": [MessageHandler(Filters.text, report_end)],
             "status": [MessageHandler(Filters.text, report_status)],
             "save": [MessageHandler(Filters.text, report_save)],
+            "new": [MessageHandler(Filters.text, new_report)]
         },
         fallbacks = [MessageHandler(Filters.text | Filters.video | Filters.photo | Filters.document | Filters.location, report_incorrect)]
     )
