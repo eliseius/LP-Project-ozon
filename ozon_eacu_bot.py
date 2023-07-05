@@ -1,6 +1,6 @@
-import dateparser, logging, os
+import constants, dateparser, logging, os
 from dotenv import load_dotenv
-from script import getting_sales_data
+from script import get_sales_data
 from telegram import ReplyKeyboardMarkup, ReplyKeyboardRemove
 from telegram.ext import Filters, Updater, CommandHandler, ConversationHandler, MessageHandler
 
@@ -31,77 +31,54 @@ def greet_user(update, context):
 def report_start(update, context):
     update.message.reply_text(
         'Введите дату начала периода в формате'
-        '"день.месяц.год"',
+        '"год.месяц.день"',
         reply_markup = ReplyKeyboardRemove()
     )
     return "beginning"
 
 
 def report_beginning(update, context):
-    date_beginning = update.message.text
-    # try:
-    context.user_data["report"] = {"beginning": date_beginning}
-    update.message.reply_text(
-        'Введите дату конца периода в формате'
-        '"день.месяц.год"'
-    )
-    return "end"
-    # except ERROR:
-    #     update.message.reply_text("Введите корректную дату")
-    #     return "beginning"
+    date_beginning = get_date(update.message.text)
+    if date_beginning is not None:
+        context.user_data["report"] = {"beginning": date_beginning}
+        update.message.reply_text(
+            'Введите дату конца периода в формате'
+            '"год.месяц.день"'
+        )
+        return "end"
+    else:
+        update.message.reply_text("Введите корректную дату")
+        return "beginning"
 
-# Я пока не могу сообразить, как лучше обработать вводимые данные на корректность.
-# Может нужно перенести обработку dateparser'ом из функции take_report сюда и проверить уже данные посе dateparser'а?
-# Если да, то проверить через try/except, как у меня заготовлен шаблон выше?
-# Не очень понятно тогда, что же делает fallbacks
 
 def report_end(update, context):
-    date_end = update.message.text
-    # try:
-    context.user_data["report"] = {"end": date_end}
-    update.message.reply_text("Введите значение лимита от 1 до 1000")
-    return "limit"
-    # except ERROR:
-    #     update.message.reply_text("Введите корректную дату")
-    #     return "end"
+    date_end = get_date(update.message.text)
+    if date_end is not None:
+        context.user_data["report"] = {"end": date_end}
+        update.message.reply_text("Введите статус заказов")
+        return "status"
+    else:
+        update.message.reply_text("Введите корректную дату")
+        return "end"
 
-# Вопросы аналогичны тем, что выше
 
-def report_limit(update, context):
-    ozon_limit = update.message.text
-    # try:
-    context.user_data["report"] = {"limit": ozon_limit}
-    update.message.reply_text("Введите значение смещения")
-    return "offset"
-    # except ERROR:
-    #     update.message.reply_text("Введите число от 1 до 1000")
-    #     return "limit"
+def report_status(update, context):
+    order_status = update.message.text
+    if order_status in constants.STATUS_CATALOGUE:
+        context.user_data["report"] = {"status": order_status}
+        update.message.reply_text("Сохраните отчёт")
+        return "save"
+    else:
+        update.message.reply_text("Введите корректный статус заказов")
+        return "status"
 
-# Тут просто через if/else сделать?
 
-def report_offset(update, context):
-    ozon_offset = update.message.text
-    # try:
-    context.user_data["report"] = {"offset": ozon_offset}
-    update.message.reply_text(reply_markup = main_keyboard())
+def report_save(update, context):
+    report_output = get_sales_data("beginning", "end", "status")
+    # report_output = get_sales_data(date_beginning, date_end, order_status)
+    update.message.reply_text(report_output, reply_markup = main_keyboard())
     return ConversationHandler.END
-    # except ERROR:
-    #     update.message.reply_text("Введите целое положительное число")
-    #     return "offset"
 
-# По оффсету ещё у Стаса уточню. Там, как я понимаю, должна быть просто проверка на целое положительное число? 
-
-def take_report(update, context):
-    date_start = dateparser.parse(date_beginning, settings = {'DATE_ORDER': 'DMY'})
-    date_finish = dateparser.parse(date_end, settings = {'DATE_ORDER': 'DMY'})
-    limit = ozon_limit
-    offset = ozon_offset
-    report_output = getting_sales_data(date_start, date_finish, limit, offset)
-    update.message.reply_text(report_output)
-
-# Как вытащить и вставить нужные переменные сюда? Вообще пока не соображаю(((
-# Эту функцию нужно вставить в report_offset перед return ConversationHandler.END?
-# Как тогда дожен выглядеть в итоге return в report_offset?
 
 def report_incorrect(update, context):
     update.message.reply_text("Введены некорректные данные!")
@@ -111,32 +88,28 @@ def command_request(update, context):
     user_text = update.message.text
     update.message.reply_text('Данная команда не поддерживается')
 
-# Если эта функция запускается после /start, но перед нажатием на кнопку "Сформировать отчёт",
-# то падает клавиатура, приходится снова вводить /start.
-# Куда нужно впихнуть клаву, чтобы она не падала здесь? В update.message.reply_text?
+
+def get_date(input_date):  
+    parsed_date = dateparser.parse(input_date, settings = {'DATE_ORDER': 'YMD'})
+    return parsed_date
+
 
 def main():
     ozon_bot = Updater(os.getenv('API_KEY'), use_context = True)
-
-    # Так нужно использовать переменные окружения?
-
     dp = ozon_bot.dispatcher
     report = ConversationHandler(
         entry_points = [MessageHandler(Filters.regex('^(Сформировать отчёт)$'), report_start)],
         states = {
             "beginning": [MessageHandler(Filters.text, report_beginning)],
             "end": [MessageHandler(Filters.text, report_end)],
-            "limit": [MessageHandler(Filters.text, report_limit)],
-            "offset": [MessageHandler(Filters.text, report_offset)],
+            "status": [MessageHandler(Filters.text, report_status)],
+            "save": [MessageHandler(Filters.text, report_save)],
         },
         fallbacks = [MessageHandler(Filters.text | Filters.video | Filters.photo | Filters.document | Filters.location, report_incorrect)]
     )
     dp.add_handler(report)
     dp.add_handler(CommandHandler('start', greet_user))
-
     # dp.add_handler(CommandHandler('report', take_report))
-    # Этот handler уже не нужен?
-
     dp.add_handler(MessageHandler(Filters.text, command_request))
     logging.info('BOT STARTED')
     ozon_bot.start_polling()
@@ -145,8 +118,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
-# В итоге у меня после прохождения диалога бот прекращает реагировать на любые команды. 
-# /start тоже не воспринимает
-# Тяжеловато пока даётся понимание бота, долго пытаюсь победить его(
-# Ещё и по некотрым урокам по боту код не работает (Clarifai, например), что не добавляет понимания
