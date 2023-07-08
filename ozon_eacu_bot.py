@@ -54,7 +54,7 @@ def report_beginning(update, context):
 def report_end(update, context):
     date_end = get_date(update.message.text)
     if date_end is not None:
-        context.user_data["report"] = {"end": date_end}
+        context.user_data["report"]["end"] = date_end
         update.message.reply_text("Введите статус заказов")
         return "status"
     else:
@@ -65,7 +65,7 @@ def report_end(update, context):
 def report_status(update, context):
     order_status = update.message.text
     if order_status in constants.STATUS_CATALOGUE:
-        context.user_data["report"] = {"status": order_status}
+        context.user_data["report"]["status"] = order_status
         update.message.reply_text("Отчёт готов")
         return "save"
     else:
@@ -74,8 +74,11 @@ def report_status(update, context):
 
 
 def report_save(update, context):
-    report_output = get_sales_data("beginning", "end", "status")
-    # report_output = get_sales_data(date_beginning, date_end, order_status)
+    report_output = get_sales_data(
+        context.user_data["report"]["beginning"],
+        context.user_data["report"]["end"],
+        context.user_data["report"]["status"]
+    )
     update.message.reply_text(report_output)
     return "new"
 
