@@ -22,7 +22,7 @@ def main_keyboard():
 
 def greet_user(update, context):
     update.message.reply_text(
-        'Здравствуйте, вы используете бота для сбора данных о продажах товаров в страны Таможенного союза через Ozon.'
+        'Здравствуйте, вы используете бота для сбора данных о продажах товаров в страны Таможенного союза через Ozon.\n'
         'Для получения отчёта нажмите кнопку "Сформировать отчёт"',
         reply_markup = main_keyboard()
     )
@@ -30,76 +30,83 @@ def greet_user(update, context):
 
 def report_start(update, context):
     update.message.reply_text(
-        'Введите дату начала периода в формате'
+        'Введите дату начала периода в формате\n'
         '"год.месяц.день"',
         reply_markup = ReplyKeyboardRemove()
     )
-    return "beginning"
+    return 'beginning'
 
 
 def report_beginning(update, context):
     date_beginning = get_date(update.message.text)
     if date_beginning is not None:
-        context.user_data["report"] = {"beginning": date_beginning}
+        context.user_data['report'] = {'beginning': date_beginning}
         update.message.reply_text(
-            'Введите дату конца периода в формате'
+            'Введите дату конца периода в формате\n'
             '"год.месяц.день"'
         )
-        return "end"
+        return 'end'
     else:
-        update.message.reply_text("Введите корректную дату")
-        return "beginning"
+        update.message.reply_text('Введите корректную дату')
+        return 'beginning'
 
 
 def report_end(update, context):
     date_end = get_date(update.message.text)
     if date_end is not None:
-        context.user_data["report"]["end"] = date_end
-        update.message.reply_text("Введите статус заказов")
-        return "status"
+        if date_end > context.user_data['report']['beginning']:
+            context.user_data['report']['end'] = date_end
+            update.message.reply_text('Введите статус заказов')
+            update.message.reply_text(
+                'Доступные статусы:\n\n'
+                'awaiting_registration  -  Ожидает регистрации\n'
+                'acceptance_in_progress  -  Идёт приёмка\n'
+                'awaiting_approve  -  Ожидает подтверждения\n'
+                'awaiting_packaging  -  Ожидает упаковки\n'
+                'awaiting_deliver  -  Ожидает доставки\n'
+                'arbitration  -  Арбитраж\n'
+                'client_arbitration  -  Клиентский арбитраж\n'
+                'delivering  -  Доставка\n'
+                'driver_pickup  -  Доставка самовывозом\n'
+                'delivered  -  Доставлено\n'
+                'cancelled  -  Отменено\n'
+                'not_accepted  -  Не принято\n'
+                'sent_by_seller  -  Отправлено продавцом\n'
+            )
+            return 'status'
+        else:
+            update.message.reply_text('Дата конца периода не может быть раньше даты начала')
+            return 'end'
     else:
-        update.message.reply_text("Введите корректную дату")
-        return "end"
+        update.message.reply_text('Введите корректную дату')
+        return 'end'
 
 
 def report_status(update, context):
     order_status = update.message.text
     if order_status in constants.STATUS_CATALOGUE:
-        context.user_data["report"]["status"] = order_status
-        update.message.reply_text("Отчёт готов")
-        return "save"
+        context.user_data['report']['status'] = order_status
+        update.message.reply_text('Отчёт формируется')
+        report_output = get_sales_data(
+            context.user_data['report']['beginning'],
+            context.user_data['report']['end'],
+            context.user_data['report']['status']
+        )
+        context.user_data['ready_report'] = str(report_output)
+        update.message.reply_text(f"Отчёт готов:\n\n{context.user_data['ready_report']}")
+        update.message.reply_text('Вы можете сформировать новый отчёт', reply_markup = main_keyboard())
+        return ConversationHandler.END
     else:
-        update.message.reply_text("Введите корректный статус заказов")
-        return "status"
-
-
-def report_save(update, context):
-    report_output = get_sales_data(
-        context.user_data["report"]["beginning"],
-        context.user_data["report"]["end"],
-        context.user_data["report"]["status"]
-    )
-    update.message.reply_text(report_output)
-    return "new"
-
-
-def new_report(update, context):
-    update.message.reply_text(
-        'Вы можете сформировать новый отчёт',
-        reply_markup = main_keyboard()
-    )
+        update.message.reply_text('Введите корректный статус заказов')
+        return 'status'
 
 
 def report_incorrect(update, context):
-    update.message.reply_text("Введены некорректные данные!")
+    update.message.reply_text('Введены некорректные данные')
 
 
-def command_request(update, context):
-    user_text = update.message.text
-    update.message.reply_text(
-        'Данная команда не поддерживается',
-        reply_markup = main_keyboard()
-    )
+def incorrect_comand(update, context):
+    update.message.reply_text('Данная команда не поддерживается')
 
 
 def get_date(input_date):  
@@ -113,22 +120,19 @@ def main():
     report = ConversationHandler(
         entry_points = [MessageHandler(Filters.regex('^(Сформировать отчёт)$'), report_start)],
         states = {
-            "beginning": [MessageHandler(Filters.text, report_beginning)],
-            "end": [MessageHandler(Filters.text, report_end)],
-            "status": [MessageHandler(Filters.text, report_status)],
-            "save": [MessageHandler(Filters.text, report_save)],
-            "new": [MessageHandler(Filters.text, new_report)]
+            'beginning': [MessageHandler(Filters.text, report_beginning)],
+            'end': [MessageHandler(Filters.text, report_end)],
+            'status': [MessageHandler(Filters.text, report_status)],
         },
         fallbacks = [MessageHandler(Filters.text | Filters.video | Filters.photo | Filters.document | Filters.location, report_incorrect)]
     )
     dp.add_handler(report)
     dp.add_handler(CommandHandler('start', greet_user))
-    # dp.add_handler(CommandHandler('report', take_report))
-    dp.add_handler(MessageHandler(Filters.text, command_request))
+    dp.add_handler(MessageHandler(Filters.text, incorrect_comand))
     logging.info('BOT STARTED')
     ozon_bot.start_polling()
     ozon_bot.idle()
 
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     main()
