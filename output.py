@@ -9,14 +9,14 @@ def create_table(report):
 
     table.add_column("posting_number", justify="center", overflow='fold', max_width=7)
     table.add_column("shipment_date", justify="center", overflow='fold', max_width=10)
-    table.add_column("price", justify="center", max_width=6)
+    table.add_column("price_USD", justify="center", overflow='fold', max_width=6)
     table.add_column("name", justify="left",  overflow='fold', min_width=15)
     table.add_column("quantity", overflow='fold', justify="center", max_width=7)
     table.add_column("cluster_delivery",  overflow='fold', justify="left", max_width=10)
 
     for item in report:
         item_out = edit_item(item)
-        table.add_row(item_out['posting_number'], item_out['shipment_date'], item_out['price'],
+        table.add_row(item_out['posting_number'], item_out['shipment_date'], item_out['price_USD'],
                         item_out['name'], item_out['quantity'], item_out['cluster_delivery'])
 
     console = Console()
@@ -25,7 +25,7 @@ def create_table(report):
 
 def edit_item(item):
     item['shipment_date'] = item.get('shipment_date')[:10]
-    item['price'] = '%.1f' % float(item.get('price'))
+    item['price_USD'] = '%.2f' % float(item.get('price_USD'))
     item['quantity'] = str(item['quantity'])
     text = Text(item['cluster_delivery'])
 

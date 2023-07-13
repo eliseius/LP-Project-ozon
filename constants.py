@@ -1,4 +1,4 @@
-URL = "https://api-seller.ozon.ru/v3/posting/fbs/list"
+URL_OZON = "https://api-seller.ozon.ru/v3/posting/fbs/list"
 LIMIT = 1000
 
 CITIES_FROM_KZ = {'Актау', 'Актобе', 'Алма-Ата', 'Астана', 'Атырау', 'Караганда', 
@@ -14,3 +14,5 @@ STATUS_CATALOGUE = {'awaiting_registration', 'acceptance_in_progress', 'awaiting
                     'delivering', 'driver_pickup', 'delivered', 'cancelled', 
                     'not_accepted', 'sent_by_seller'
                     }
+
+URL_CURRENCY = "http://api.currencylayer.com/historical"

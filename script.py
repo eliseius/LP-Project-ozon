@@ -4,7 +4,8 @@ import json
 import os
 import requests
 
-from constants import CITIES_FROM_BE, CITIES_FROM_KZ, LIMIT, URL
+from constants import CITIES_FROM_BE, CITIES_FROM_KZ, LIMIT, URL_OZON
+from currency import get_report_with_currency
 from input_data import get_input_data
 from output import create_table, get_color_message
 
@@ -16,8 +17,9 @@ def get_sales_data(date_start, date_finish, status):
 
     report = get_report_with_all_page(str_dt_start, str_dt_finish, offset, status)
     report_with_filter_city = check_filter_city(report)
+    report_with_usd = get_report_with_currency(report_with_filter_city)
 
-    return report_with_filter_city
+    return report_with_usd
 
 
 def get_report_with_all_page(str_datetime_start, str_datetime_finish, offset, status):
@@ -57,7 +59,7 @@ def get_raw_sales_data(datetime_start, datetime_finish, limit, offset, status):
     }
 
     params = json.dumps(params)
-    response = requests.post(URL, headers=headers, data=params)
+    response = requests.post(URL_OZON, headers=headers, data=params)
     if response:
         try:
             sales_report = response.json()
@@ -70,7 +72,7 @@ def get_raw_sales_data(datetime_start, datetime_finish, limit, offset, status):
         return None
 
 
-def make_short_report(sales_report):
+def make_short_report(sales_report): #разобраться со статусом
     all_item_sold = sales_report['result']['postings']
     short_report = []
     for one_item_sold in all_item_sold:
