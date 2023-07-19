@@ -161,8 +161,6 @@ cython_debug/
 
 
 # My Files
-sales.json
-constants.py
 input_data.py
 output.py
 ozon_settings.py
