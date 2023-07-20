@@ -1,6 +1,6 @@
 import logging, os
 from handlers import start_bot, has_incorrect_input
-from report import get_report_date1, get_report_date2, get_report_incorrect, get_report_start, get_report_status
+from report import get_report_date_start, get_report_date_end, get_report_incorrect, get_report_start, get_report_status
 from telegram.ext import Filters, Updater, CommandHandler, ConversationHandler, MessageHandler
 
 
@@ -10,7 +10,7 @@ logging.basicConfig(
     format = '%(asctime)s - %(name)s [%(levelname)s]: %(message)s',
     datefmt = '%d/%m/%Y %H:%M:%S',
 )
-	
+
 
 def main():
     ozon_bot = Updater(os.environ['API_KEY'], use_context = True)
@@ -18,8 +18,8 @@ def main():
     report = ConversationHandler(
         entry_points = [MessageHandler(Filters.regex('^(Сформировать отчёт)$'), get_report_start)],
         states = {
-            'period_beginning': [MessageHandler(Filters.text, get_report_date1)],
-            'period_end': [MessageHandler(Filters.text, get_report_date2)],
+            'period_start': [MessageHandler(Filters.text, get_report_date_start)],
+            'period_end': [MessageHandler(Filters.text, get_report_date_end)],
             'status': [MessageHandler(Filters.text, get_report_status)],
         },
         fallbacks = [MessageHandler(Filters.text | Filters.video | Filters.photo | Filters.document | Filters.location, get_report_incorrect)],

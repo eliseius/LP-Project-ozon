@@ -1,4 +1,4 @@
-from utils import show_main_keyboard
+from utils import main_keyboard
 
 
 def start_bot(update, context):
@@ -6,7 +6,7 @@ def start_bot(update, context):
         'Здравствуйте, вы используете бота для сбора данных '
         'о продажах товаров в страны Таможенного союза через Ozon.\n'
         'Для получения отчёта нажмите кнопку "Сформировать отчёт"',
-        reply_markup = show_main_keyboard(),
+        reply_markup = main_keyboard(),
     )
 
 

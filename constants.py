@@ -1,5 +1,9 @@
-URL = "https://api-seller.ozon.ru/v3/posting/fbs/list"
+URL = 'https://api-seller.ozon.ru/v3/posting/fbs/list'
 LIMIT = 1000
+
+
+DATEPARSER_SETTINGS = {'DATE_ORDER': 'YMD',}
+
 
 CITIES_FROM_KZ = {'Актау', 'Актобе', 'Алма-Ата', 'Астана', 'Атырау', 'Караганда', 
                   'Костанай', 'Кызылорда', 'Павлодар', 'Петропавловск', 'Тараз', 
