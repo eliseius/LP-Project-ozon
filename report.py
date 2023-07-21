@@ -2,7 +2,7 @@ import constants
 from script import get_sales_data
 from telegram import ParseMode, ReplyKeyboardRemove
 from telegram.ext import ConversationHandler
-from utils import parse_date, render_report, render_statuses, main_keyboard
+from utils import parse_date, render_report, render_statuses, compose_keyboard
 
 
 def get_report_start(update, context):
@@ -50,12 +50,12 @@ def get_report_status(update, context):
     report_output = get_sales_data(
         date_start=context.user_data['report']['period_start'],
         date_finish=context.user_data['report']['period_end'],
-        status=order_status
+        status=order_status,
     )
     update.message.reply_text(render_report(report_output), parse_mode = ParseMode.HTML)
     update.message.reply_text(
         'Вы можете сформировать новый отчёт',
-        reply_markup = main_keyboard(),
+        reply_markup = compose_keyboard(),
     )
     return ConversationHandler.END
 

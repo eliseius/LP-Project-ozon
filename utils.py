@@ -2,7 +2,7 @@ import constants, dateparser
 from telegram import ReplyKeyboardMarkup
 
 
-def main_keyboard():
+def compose_keyboard():
     return ReplyKeyboardMarkup([['Сформировать отчёт',]])
 
 
