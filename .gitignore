@@ -159,9 +159,10 @@ cython_debug/
 #  option (not recommended) you can uncomment the following to ignore the entire idea folder.
 #.idea/
 
-
-# My Files
-TEST_bot.py
-TEST_for_test.py
-TEST_for_test2.py
+# Other
+export.py
 ozon_settings.py
+
+# Test
+TEST/
+TEST.py
