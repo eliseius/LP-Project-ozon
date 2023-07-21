@@ -21,7 +21,7 @@ def render_statuses():
 
 def render_report(report_list):
     if not report_list:
-        return ('Нет заказов для отображения в отчёте')
+        return ('Нет заказов для отображения в отчёте или произошла ошибка. Попробуйте ввести другие данные')
     final_report = []
     for order in report_list:
         final_report.append(
