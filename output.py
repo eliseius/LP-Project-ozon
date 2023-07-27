@@ -5,22 +5,23 @@ from rich.text import Text
 
 
 def create_table(report):
-    table = Table(title="Data sell OZON", title_style="#00ab98", expand=True, show_lines=True, style="#f6c42d")
+    if report is not None:
+        table = Table(title="Data sell OZON", title_style="#00ab98", expand=True, show_lines=True, style="#f6c42d")
 
-    table.add_column("posting_number", justify="center", overflow='fold', max_width=7)
-    table.add_column("shipment_date", justify="center", overflow='fold', max_width=10)
-    table.add_column("price_USD", justify="center", overflow='fold', max_width=6)
-    table.add_column("name", justify="left",  overflow='fold', min_width=15)
-    table.add_column("quantity", overflow='fold', justify="center", max_width=7)
-    table.add_column("cluster_delivery",  overflow='fold', justify="left", max_width=10)
+        table.add_column("posting_number", justify="center", overflow='fold', max_width=7)
+        table.add_column("shipment_date", justify="center", overflow='fold', max_width=10)
+        table.add_column("price_USD", justify="center", overflow='fold', max_width=6)
+        table.add_column("name", justify="left",  overflow='fold', min_width=15)
+        table.add_column("quantity", overflow='fold', justify="center", max_width=7)
+        table.add_column("cluster_delivery",  overflow='fold', justify="left", max_width=10)
 
-    for item in report:
-        item_out = edit_item(item)
-        table.add_row(item_out['posting_number'], item_out['shipment_date'], item_out['price_USD'],
-                        item_out['name'], item_out['quantity'], item_out['cluster_delivery'])
+        for item in report:
+            item_out = edit_item(item)
+            table.add_row(item_out['posting_number'], item_out['shipment_date'], item_out['price_USD'],
+                            item_out['name'], item_out['quantity'], item_out['cluster_delivery'])
 
-    console = Console()
-    console.print(table)
+        console = Console()
+        console.print(table)
 
 
 def edit_item(item):
