@@ -1,7 +1,11 @@
-import logging, os
-from handlers import start_bot, has_incorrect_input
-from report import get_report_date_start, get_report_date_end, get_report_incorrect, get_report_start, get_report_status
+import logging
+
 from telegram.ext import Filters, Updater, CommandHandler, ConversationHandler, MessageHandler
+
+from constants import API_KEY_BOT
+from handlers import start_bot, has_incorrect_input
+from report import (get_report_date_start, get_report_date_end, get_report_incorrect,
+                    get_report_start, get_report_status)
 
 
 logging.basicConfig(
@@ -13,7 +17,7 @@ logging.basicConfig(
 
 
 def main():
-    ozon_bot = Updater(os.environ['API_KEY'], use_context = True)
+    ozon_bot = Updater(API_KEY_BOT, use_context = True)
     dp = ozon_bot.dispatcher
     report = ConversationHandler(
         entry_points = [MessageHandler(Filters.regex('^(Сформировать отчёт)$'), get_report_start)],

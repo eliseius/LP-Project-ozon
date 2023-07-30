@@ -1,4 +1,8 @@
-import constants, dateparser
+import constants
+import dateparser
+import logging
+import os
+
 from telegram import ReplyKeyboardMarkup
 
 
@@ -20,16 +24,42 @@ def render_statuses():
 
 
 def render_report(report_list):
-    if not report_list:
-        return ('Нет заказов для отображения в отчёте или произошла ошибка. Попробуйте ввести другие данные')
     final_report = []
     for order in report_list:
         final_report.append(
             f'<b>Номер отправления:</b>  {order["posting_number"]}\n'
             f'<b>Дата отгрузки:</b>  {order["shipment_date"]}\n'
-            f'<b>Цена:</b>  {order["price"]}\n'
+            f'<b>Цена в долларах:</b>  {order["price_USD"]}\n'
             f'<b>Наименование:</b>  {order["name"]}\n'
             f'<b>Количество:</b>  {order["quantity"]}\n'
             f'<b>Кластер доставки:</b>  {order["cluster_delivery"]}\n'
         )
     return '\n'.join(final_report)
+
+
+def save_error_ozon(code):
+    name_error = constants.LIST_ERROR_OZON[code]
+    text = f'Возникла ошибка OZON\n{code}: {name_error}'
+    error_log = f'Error OZON - {code}'
+    write_error(text, error_log)
+
+
+def save_error_currency(code):
+    name_error = constants.LIST_ERROR_CURRENCY[code]
+    text = f'Возникла ошибка курса валют\n{code}: {name_error}'
+    error_log = f'Error CURRENCY - {code}'
+    write_error(text, error_log)
+
+
+def write_error(name, error_log):
+    logging.warning(error_log)
+    with open(constants.NAME_FILE_WITH_ERROR, 'w', encoding='utf-8') as file:
+        file.write(name)
+
+
+
+def output_error(update):
+    with open(constants.NAME_FILE_WITH_ERROR, 'r', encoding='utf-8') as file:
+        name_error = file.read()
+    update.message.reply_text(name_error)
+    os.remove(constants.LOCATE_FILE_WITH_ERROR)

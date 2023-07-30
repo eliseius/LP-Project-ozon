@@ -5,6 +5,7 @@ from rich.text import Text
 
 
 def create_table(report):
+    print(report)
     if report is not None:
         table = Table(title="Data sell OZON", title_style="#00ab98", expand=True, show_lines=True, style="#f6c42d")
 

@@ -3,12 +3,12 @@ from datetime import datetime as dt
 import json
 import os
 import requests
-import sys
 
-from constants import CITIES_FROM_BE, CITIES_FROM_KZ, LIMIT, URL_OZON, LIST_ERROR_OZON
+from constants import CITIES_FROM_BE, CITIES_FROM_KZ, LIMIT, URL_OZON
 from currency import get_report_with_currency
 from input_data import get_input_data
 from output import create_table, get_color_message
+from utils import save_error_ozon
 
 
 def get_sales_data(date_start, date_finish, status):
@@ -18,15 +18,14 @@ def get_sales_data(date_start, date_finish, status):
 
     report = get_report_with_all_page(str_dt_start, str_dt_finish, offset, status)
     report_with_filter_city = check_filter_city(report)
-    report_with_usd = get_report_with_currency(report_with_filter_city)# можно получить None
-
+    report_with_usd = get_report_with_currency(report_with_filter_city)
     return report_with_usd
 
 
 def get_report_with_all_page(str_datetime_start, str_datetime_finish, offset, status):
-    report_pagination = []# вероятность пустого отчета, если 28 строчка будет None
+    report_pagination = []
     while True:
-        sales_report = get_raw_sales_data(str_datetime_start, str_datetime_finish, LIMIT, offset, status)# можно получить None
+        sales_report = get_raw_sales_data(str_datetime_start, str_datetime_finish, LIMIT, offset, status)
         if sales_report is not None:
             short_report = make_short_report(sales_report)
             report_pagination.extend(short_report)
@@ -71,9 +70,8 @@ def get_raw_sales_data(datetime_start, datetime_finish, limit, offset, status):
     else:
         get_color_message(('Сетевая ошибка'), 'error')
         code = response.status_code
-    show_error(code)
-    sys.exit("Завершение программы")
-
+    save_error_ozon(code)
+    return None
 
 
 def make_short_report(sales_report):
@@ -105,14 +103,6 @@ def check_filter_city(short_report):
             short_report_with_filter_city.append(item_sold)
 
     return short_report_with_filter_city
-
-
-def show_error(code):
-    name_error = LIST_ERROR_OZON[code]
-    get_color_message(name_error, 'error')
-    pass
-    #Вызываем функцию в телеграмм боте, которая напечатает ошибку пользователя
-
 
 
 if __name__ == '__main__':

@@ -1,8 +1,11 @@
 import constants
-from script import get_sales_data
+import os
+
 from telegram import ParseMode, ReplyKeyboardRemove
 from telegram.ext import ConversationHandler
-from utils import parse_date, render_report, render_statuses, compose_keyboard
+
+from script import get_sales_data
+from utils import parse_date, render_report, render_statuses, compose_keyboard, output_error
 
 
 def get_report_start(update, context):
@@ -52,7 +55,7 @@ def get_report_status(update, context):
         date_finish=context.user_data['report']['period_end'],
         status=order_status,
     )
-    update.message.reply_text(render_report(report_output), parse_mode = ParseMode.HTML)
+    check_report(report_output, update)
     update.message.reply_text(
         'Вы можете сформировать новый отчёт',
         reply_markup = compose_keyboard(),
@@ -62,3 +65,13 @@ def get_report_status(update, context):
 
 def get_report_incorrect(update, context):
     update.message.reply_text('Невозможно обработать объект!\nВведите корректные данные с клавиатуры')
+
+
+def check_report(report, update):
+    if not report:
+        if os.path.exists(constants.LOCATE_FILE_WITH_ERROR):
+            output_error(update)
+        else:
+            update.message.reply_text('Нет заказов для отображения в отчёте. Попробуйте ввести другие данные')
+    else:
+        update.message.reply_text(render_report(report), parse_mode = ParseMode.HTML)
