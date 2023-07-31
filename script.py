@@ -17,9 +17,9 @@ def get_sales_data(date_start, date_finish, status):
     str_dt_finish = dt.strftime(date_finish, '%Y-%m-%dT%H:%M:%S.%fZ')
 
     report = get_report_with_all_page(str_dt_start, str_dt_finish, offset, status)
-    report_with_filter_city = check_filter_city(report)
+    report_with_filter_city,  sum_post_in_city = check_filter_city(report)
     report_with_usd = get_report_with_currency(report_with_filter_city)
-    return report_with_usd
+    return report_with_usd, sum_post_in_city
 
 
 def get_report_with_all_page(str_datetime_start, str_datetime_finish, offset, status):
@@ -92,17 +92,24 @@ def make_short_report(sales_report):
 
 
 def check_filter_city(short_report):
-    short_report_with_filter_city = []
+    report_kz = []
+    report_be = []
+    sum_post_in_city = {}
     for item_sold in short_report:
         clusters = set(item_sold['cluster_delivery'].split())
         if CITIES_FROM_KZ.union(CITIES_FROM_BE) & clusters:
             if CITIES_FROM_KZ & clusters:
                 item_sold['cluster_delivery'] = 'Казахстан'
+                report_kz.append(item_sold)
             else:
                 item_sold['cluster_delivery'] = 'Беларусь'
-            short_report_with_filter_city.append(item_sold)
+                report_be.append(item_sold)
+    report_with_filter_city = [*report_kz, *report_be]
 
-    return short_report_with_filter_city
+    sum_post_in_city['Казахстан'] = len(report_kz)
+    sum_post_in_city['Беларусь'] = len(report_be)
+
+    return report_with_filter_city, sum_post_in_city
 
 
 if __name__ == '__main__':

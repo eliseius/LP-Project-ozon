@@ -5,7 +5,7 @@ from telegram import ParseMode, ReplyKeyboardRemove
 from telegram.ext import ConversationHandler
 
 from script import get_sales_data
-from utils import parse_date, render_report, render_statuses, compose_keyboard, output_error
+from utils import compose_keyboard, output_error, output_report, parse_date, render_statuses
 
 
 def get_report_start(update, context):
@@ -50,12 +50,12 @@ def get_report_status(update, context):
         update.message.reply_text('Введите корректный статус заказов')
         return 'status'
     update.message.reply_text('Отчёт формируется...')
-    report_output = get_sales_data(
+    report_output, sum_post_in_city = get_sales_data(
         date_start=context.user_data['report']['period_start'],
         date_finish=context.user_data['report']['period_end'],
         status=order_status,
     )
-    check_report(report_output, update)
+    check_report(report_output, sum_post_in_city, update)
     update.message.reply_text(
         'Вы можете сформировать новый отчёт',
         reply_markup = compose_keyboard(),
@@ -67,11 +67,11 @@ def get_report_incorrect(update, context):
     update.message.reply_text('Невозможно обработать объект!\nВведите корректные данные с клавиатуры')
 
 
-def check_report(report, update):
+def check_report(report, sum_post_in_city, update):
     if not report:
         if os.path.exists(constants.LOCATE_FILE_WITH_ERROR):
             output_error(update)
         else:
             update.message.reply_text('Нет заказов для отображения в отчёте. Попробуйте ввести другие данные')
     else:
-        update.message.reply_text(render_report(report), parse_mode = ParseMode.HTML)
+        output_report(report, sum_post_in_city, update)

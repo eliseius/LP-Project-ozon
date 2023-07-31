@@ -3,7 +3,7 @@ import dateparser
 import logging
 import os
 
-from telegram import ReplyKeyboardMarkup
+from telegram import ParseMode, ReplyKeyboardMarkup
 
 
 def compose_keyboard():
@@ -35,6 +35,20 @@ def render_report(report_list):
             f'<b>Кластер доставки:</b>  {order["cluster_delivery"]}\n'
         )
     return '\n'.join(final_report)
+
+
+def adapt_sum_post(report_list):
+    sum_post = []
+    for k, v in report_list.items():
+        sum_post.append(
+            f'{k} - {v} отправления(ий)'
+        )
+    return '\n'.join(sum_post)
+
+
+def output_report(report, sum_post_in_city, update):
+    update.message.reply_text(render_report(report), parse_mode = ParseMode.HTML)
+    update.message.reply_text(adapt_sum_post(sum_post_in_city))
 
 
 def save_error_ozon(code):

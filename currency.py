@@ -47,8 +47,7 @@ def get_exchange_rate(str_date_send):
         if report is None or report['success']:
             return report
             break
-    
-    errore = report['error']
+        
     get_color_message(('Сетевая ошибка курса валют'), 'error')
     code = report['error']['code']
     save_error_currency(code)
