@@ -54,8 +54,6 @@ LIST_ERROR_CURRENCY = {
     700: 'Ошибка получения данных валюты. Обратитесь в службу поддержки бота.'
 }
 
-API_KEY_BOT = '6452951241:AAHDZcXJXXcBJ2zSqE2y2kaNF8l_iqmrzxQ' # Спратять апи кей от глаз
-
 NAME_FILE_WITH_ERROR = 'error.txt'
 
 LOCATE_FILE_WITH_ERROR = f'C:\project\LP-Project-ozon\{NAME_FILE_WITH_ERROR}'
