@@ -4,7 +4,7 @@ import json
 import os
 import requests
 
-from constants import CITIES_FROM_BE, CITIES_FROM_KZ, LIMIT, URL_OZON
+from constants import CITIES_FROM_AM, CITIES_FROM_KG, CITIES_FROM_BE, CITIES_FROM_KZ, LIMIT, URL_OZON
 from currency import get_report_with_currency
 from input_data import get_input_data
 from output import create_table, get_color_message
@@ -92,22 +92,33 @@ def make_short_report(sales_report):
 
 
 def check_filter_city(short_report):
-    report_kz = []
+    report_am = []
     report_be = []
+    report_kg = []
+    report_kz = []
     sum_post_in_city = {}
     for item_sold in short_report:
         clusters = set(item_sold['cluster_delivery'].split())
-        if CITIES_FROM_KZ.union(CITIES_FROM_BE) & clusters:
-            if CITIES_FROM_KZ & clusters:
-                item_sold['cluster_delivery'] = 'Казахстан'
-                report_kz.append(item_sold)
-            else:
+        if CITIES_FROM_KZ.union(CITIES_FROM_AM, CITIES_FROM_KG, CITIES_FROM_BE) & clusters:
+            if CITIES_FROM_AM & clusters:
+                item_sold['cluster_delivery'] = 'Армения'
+                report_am.append(item_sold)
+            elif CITIES_FROM_BE& clusters:
                 item_sold['cluster_delivery'] = 'Беларусь'
                 report_be.append(item_sold)
-    report_with_filter_city = [*report_kz, *report_be]
+            elif CITIES_FROM_KG& clusters:
+                item_sold['cluster_delivery'] = 'Киргизия'
+                report_kg.append(item_sold)
+            elif CITIES_FROM_KZ& clusters:
+                item_sold['cluster_delivery'] = 'Казахстан'
+                report_kz.append(item_sold)
 
-    sum_post_in_city['Казахстан'] = len(report_kz)
+    report_with_filter_city = [*report_am, *report_be, *report_kg, *report_kz]
+
+    sum_post_in_city['Армения'] = len(report_am)
     sum_post_in_city['Беларусь'] = len(report_be)
+    sum_post_in_city['Киргизия'] = len(report_kg)
+    sum_post_in_city['Казахстан'] = len(report_kz)
 
     return report_with_filter_city, sum_post_in_city
 
