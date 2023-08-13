@@ -169,4 +169,5 @@ ozon_settings.py
 # Test
 TEST/
 TEST.py
->>>>>>> main
+
+test_currency.py

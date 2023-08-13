@@ -60,16 +60,15 @@ def save_error_ozon(code):
 
 def save_error_currency(code):
     name_error = constants.LIST_ERROR_CURRENCY[code]
-    text = f'Возникла ошибка курса валют\n{code}: {name_error}'
+    text = f'Возникла ошибка ВАЛЮТЫ\n{code}: {name_error}'
     error_log = f'Error CURRENCY - {code}'
     write_error(text, error_log)
 
 
 def write_error(name, error_log):
-    logging.warning(error_log)
+    logging.error(error_log)
     with open(constants.NAME_FILE_WITH_ERROR, 'w', encoding='utf-8') as file:
         file.write(name)
-
 
 
 def output_error(update):

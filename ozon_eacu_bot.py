@@ -6,6 +6,7 @@ from telegram.ext import CommandHandler, ConversationHandler, Filters, MessageHa
 from handlers import has_incorrect_input, start_bot
 from report import (get_report_date_end, get_report_date_start, get_report_incorrect,
                     get_report_start, get_report_status)
+from update_db import start_update_dbase
 
 
 logging.basicConfig(
@@ -38,3 +39,4 @@ def main():
 
 if __name__ == '__main__':
     main()
+    start_update_dbase()

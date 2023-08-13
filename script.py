@@ -5,9 +5,7 @@ import os
 import requests
 
 from constants import CITIES_FROM_AM, CITIES_FROM_KG, CITIES_FROM_BE, CITIES_FROM_KZ, LIMIT, URL_OZON
-from currency import get_report_with_currency
-from input_data import get_input_data
-from output import create_table, get_color_message
+from queries_in_db import get_report_with_currency
 from utils import save_error_ozon
 
 
@@ -65,10 +63,10 @@ def get_raw_sales_data(datetime_start, datetime_finish, limit, offset, status):
             sales_report = response.json()
             return sales_report
         except ValueError:
-            get_color_message(('Ошибка сформированных данных'), 'error')
+            print('Ошибка сформированных данных')
             code = 700
     else:
-        get_color_message(('Сетевая ошибка'), 'error')
+        print('Сетевая ошибка')
         code = response.status_code
     save_error_ozon(code)
     return None
@@ -121,9 +119,3 @@ def check_filter_city(short_report):
     sum_post_in_city['Казахстан'] = len(report_kz)
 
     return report_with_filter_city, sum_post_in_city
-
-
-if __name__ == '__main__':
-    date_start, date_finish, status = get_input_data()
-    report = get_sales_data(date_start, date_finish, status)
-    create_table(report)
