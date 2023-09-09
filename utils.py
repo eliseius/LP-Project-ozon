@@ -34,7 +34,7 @@ def render_report(report_list):
             f'<b>Количество:</b>  {order["quantity"]}\n'
             f'<b>Кластер доставки:</b>  {order["cluster_delivery"]}\n'
         )
-    return '\n'.join(final_report)
+    return '\n' .join(final_report)
 
 
 def adapt_sum_post(report_list):
