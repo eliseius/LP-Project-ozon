@@ -159,6 +159,9 @@ cython_debug/
 #  option (not recommended) you can uncomment the following to ignore the entire idea folder.
 #.idea/
 
+
+test/
+
 # Other
 export.py
 ozon_settings.py
@@ -166,3 +169,5 @@ ozon_settings.py
 # Test
 TEST/
 TEST.py
+
+test_currency.py

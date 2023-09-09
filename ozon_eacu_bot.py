@@ -1,7 +1,12 @@
-import logging, os
-from handlers import start_bot, has_incorrect_input
-from report import get_report_date_start, get_report_date_end, get_report_incorrect, get_report_start, get_report_status
-from telegram.ext import Filters, Updater, CommandHandler, ConversationHandler, MessageHandler
+import logging
+import os
+
+from telegram.ext import CommandHandler, ConversationHandler, Filters, MessageHandler, Updater
+
+from handlers import has_incorrect_input, start_bot
+from report import (get_report_date_end, get_report_date_start, get_report_incorrect,
+                    get_report_start, get_report_status)
+from update_db import start_update_dbase
 
 
 logging.basicConfig(
@@ -13,7 +18,7 @@ logging.basicConfig(
 
 
 def main():
-    ozon_bot = Updater(os.environ['API_KEY'], use_context = True)
+    ozon_bot = Updater(os.environ['OZON_BOT'], use_context = True)
     dp = ozon_bot.dispatcher
     report = ConversationHandler(
         entry_points = [MessageHandler(Filters.regex('^(Сформировать отчёт)$'), get_report_start)],
@@ -34,3 +39,4 @@ def main():
 
 if __name__ == '__main__':
     main()
+    start_update_dbase()
